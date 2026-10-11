@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="de" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kilbi Los-Bunde Verwaltung</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-full flex flex-col">
+
+    <header class="bg-slate-900 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 p-2 rounded-xl text-white shadow-lg">
+                    <i class="fa-solid fa-ticket text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-tight">Kilbi Los-Bunde Manager</h1>
+                    <p class="text-xs text-slate-400">Vereinsverwaltung (Gesamt: 16 Bunde / 800.- CHF)</p>
+                </div>
+            </div>
+            
+            <!-- Navigation Tabs -->
+            <nav class="flex bg-slate-800 p-1.5 rounded-xl space-x-1">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-4 py-2 text-sm font-medium rounded-lg transition-all bg-indigo-600 text-white shadow">
+                    <i class="fa-solid fa-chart-pie mr-2"></i>Dashboard
+                </button>
+                <button onclick="switchTab('mitglieder')" id="nav-mitglieder" class="px-4 py-2 text-sm font-medium rounded-lg transition-all text-slate-300 hover:text-white hover:bg-slate-700">
+                    <i class="fa-solid fa-users mr-2"></i>Mitglieder
+                </button>
+                <button onclick="switchTab('zuweisungen')" id="nav-zuweisungen" class="px-4 py-2 text-sm font-medium rounded-lg transition-all text-slate-300 hover:text-white hover:bg-slate-700">
+                    <i class="fa-solid fa-list-check mr-2"></i>Zuweisungen
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 overflow-y-auto">
+
+        <!-- 1. TAB: DASHBOARD -->
+        <section id="tab-dashboard" class="space-y-6 fade-in">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Bund-Statistik -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Verteilte Bunde</p>
+                        <h3 id="stat-verteilte-bunde" class="text-3xl font-extrabold text-slate-900 mt-1">0 / 16</h3>
+                    </div>
+                    <div id="stat-bunde-icon-bg" class="p-3 rounded-xl bg-amber-50 text-amber-600">
+                        <i class="fa-solid fa-box-open text-xl"></i>
+                    </div>
+                </div>
+
+                <!-- Bezahlt Statistik -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Bezahlte Bunde</p>
+                        <h3 id="stat-bezahlte-bunde" class="text-3xl font-extrabold text-slate-900 mt-1">0</h3>
+                    </div>
+                    <div class="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+                        <i class="fa-solid fa-circle-check text-xl"></i>
+                    </div>
+                </div>
+
+                <!-- Einnahmen -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Eingenommen</p>
+                        <h3 id="stat-eingenommen" class="text-3xl font-extrabold text-emerald-600 mt-1">0.- CHF</h3>
+                    </div>
+                    <div class="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+                        <i class="fa-solid fa-wallet text-xl"></i>
+                    </div>
+                </div>
+
+                <!-- Ausstehend -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Offener Betrag</p>
+                        <h3 id="stat-offen" class="text-3xl font-extrabold text-amber-600 mt-1">800.- CHF</h3>
+                    </div>
+                    <div class="p-3 rounded-xl bg-amber-50 text-amber-600">
+                        <i class="fa-solid fa-hourglass-half text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Firebase Status Banner -->
+            <div id="firebase-status-banner" class="p-3 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 text-xs flex items-center justify-between">
+                <span id="firebase-status-text"><i class="fa-solid fa-circle-notch fa-spin mr-1.5"></i> Verbinde mit Firebase...</span>
+                <span class="font-mono text-[10px] bg-slate-200 px-2 py-0.5 rounded text-slate-600">Firestore v9+</span>
+            </div>
+
+            <!-- Warnungs- / Hinweisbanner -->
+            <div id="dashboard-alert" class="p-4 rounded-2xl border flex items-start gap-3 bg-amber-50 border-amber-200 text-amber-800">
+                <i class="fa-solid fa-triangle-exclamation text-lg mt-0.5"></i>
+                <div>
+                    <h4 class="font-semibold">Verteilungsstatus</h4>
+                    <p id="dashboard-alert-text" class="text-sm mt-0.5">Es müssen noch Bunde verteilt werden.</p>
+                </div>
+            </div>
+
+            <!-- Schnellübersicht / Fortschritt -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                <h3 class="text-lg font-bold text-slate-900 mb-4">Fortschritt der 16 Gesamtbunde</h3>
+                <div class="w-full bg-slate-100 rounded-full h-4 overflow-hidden mb-2">
+                    <div id="progress-bar" class="bg-indigo-600 h-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between text-xs text-slate-500 font-medium">
+                    <span id="progress-text">0 von 16 Bunde vergeben</span>
+                    <span id="progress-percent">0%</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. TAB: MITGLIEDER VERWALTEN -->
+        <section id="tab-mitglieder" class="hidden space-y-6 fade-in">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Mitglied hinzufügen Formular -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 h-fit">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus text-indigo-600"></i> Neues Mitglied
+                    </h3>
+                    <form id="form-mitglied" onsubmit="handleMitgliedSubmit(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Vorname</label>
+                            <input type="text" id="m-vorname" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Nachname</label>
+                            <input type="text" id="m-nachname" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">E-Mail-Adresse</label>
+                            <input type="email" id="m-email" placeholder="name@verein.ch" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-xl shadow-md transition-all text-sm">
+                            Mitglied speichern
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Mitgliederliste -->
+                <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-slate-900">Vereinsmitglieder (<span id="mitglieder-count">0</span>)</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-100 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                                    <th class="py-3 px-4">Name</th>
+                                    <th class="py-3 px-4">E-Mail</th>
+                                    <th class="py-3 px-4 text-right">Aktion</th>
+                                </tr>
+                            </thead>
+                            <tbody id="mitglieder-table-body" class="divide-y divide-slate-100 text-sm">
+                                <!-- Dynamisch befüllt -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. TAB: BUND-ZUWEISUNG & KONTROLLE -->
+        <section id="tab-zuweisungen" class="hidden space-y-6 fade-in">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Zuweisung Formular -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 h-fit">
+                    <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-hand-holding-dollar text-indigo-600"></i> Bund zuweisen
+                    </h3>
+                    <form id="form-zuweisung" onsubmit="handleZuweisungSubmit(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Mitglied auswählen</label>
+                            <select id="z-mitglied" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white">
+                                <option value="">-- Bitte wählen --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Anzahl Bunde (à 50.- CHF)</label>
+                            <input type="number" id="z-bunde" min="1" max="16" value="1" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                            <p class="text-xs text-slate-500 mt-1">Verbleibende verfügbare Bunde: <span id="verfuegbare-bunde-count" class="font-semibold text-slate-800">16</span></p>
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-xl shadow-md transition-all text-sm">
+                            Zuweisung hinzufügen
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Zuweisungen Haupttabelle -->
+                <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">Aktuelle Zuweisungen & Kontrolle</h3>
+                            <p class="text-xs text-slate-500">Unbezahlte Einträge oben, bezahlte unten.</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-100 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                                    <th class="py-3 px-4">Mitglied</th>
+                                    <th class="py-3 px-4">Bunde</th>
+                                    <th class="py-3 px-4">Betrag</th>
+                                    <th class="py-3 px-4">Status / Bezahlt</th>
+                                    <th class="py-3 px-4 text-right">Aktion</th>
+                                </tr>
+                            </thead>
+                            <tbody id="zuweisungen-table-body" class="divide-y divide-slate-100 text-sm">
+                                <!-- Dynamisch befüllt -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal für Benachrichtigungen (Ersatz für alert) -->
+    <div id="custom-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 text-center space-y-4">
+            <div id="modal-icon" class="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto text-xl">
+                <i class="fa-solid fa-info"></i>
+            </div>
+            <h3 id="modal-title" class="text-lg font-bold text-slate-900">Hinweis</h3>
+            <p id="modal-message" class="text-sm text-slate-600">Nachrichtentext...</p>
+            <button onclick="closeModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-medium py-2.5 rounded-xl text-sm transition-all">
+                Verstanden
+            </button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        // FIREBASE KONFIGURATION (Hier Daten eintragen)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "DEIN_API_KEY",
+            authDomain: "DEINE_AUTH_DOMAIN",
+            projectId: "DEINE_PROJECT_ID",
+            storageBucket: "DEIN_STORAGE_BUCKET",
+            messagingSenderId: "DEIN_MESSAGING_SENDER_ID",
+            appId: "DEIN_APP_ID"
+        };
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'kilbi-verein-default';
+
+        let app, db, auth;
+        let mitgliederList = [
+            { id: 'm-1', vorname: 'Hans', nachname: 'Müller', email: 'hans.mueller@verein.ch' },
+            { id: 'm-2', vorname: 'Ursula', nachname: 'Meier', email: 'ursula.meier@verein.ch' }
+        ];
+        let zuweisungenList = [
+            { id: 'z-1', mitgliedId: 'm-1', mitgliedName: 'Hans Müller', mitgliedEmail: 'hans.mueller@verein.ch', bunde: 2, betrag: 100, bezahlt: false }
+        ];
+        let isCloudConnected = false;
+
+        // Prüfen ob die Firebase Konfiguration gültig ist (keine Platzhalter)
+        function isFirebaseConfigValid() {
+            return firebaseConfig.apiKey && 
+                   !firebaseConfig.apiKey.includes("DEIN_") && 
+                   firebaseConfig.projectId && 
+                   !firebaseConfig.projectId.includes("DEINE_");
+        }
+
+        // Initialisiere Firebase & UI
+        function initApp() {
+            if (isFirebaseConfigValid()) {
+                try {
+                    app = initializeApp(firebaseConfig);
+                    db = getFirestore(app);
+                    auth = getAuth(app);
+
+                    const initAuth = async () => {
+                        try {
+                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                                await signInWithCustomToken(auth, __initial_auth_token);
+                            } else {
+                                await signInAnonymously(auth);
+                            }
+                            isCloudConnected = true;
+                            updateFirebaseStatus(true, "Mit Firebase Firestore verbunden (Echtzeit aktiv)");
+                            setupRealtimeListeners();
+                        } catch (authErr) {
+                            console.warn("Auth-Hinweis:", authErr);
+                            updateFirebaseStatus(false, "Firebase Authentifizierung fehlgeschlagen. Lokaler Modus aktiv.");
+                            renderAll();
+                        }
+                    };
+                    initAuth();
+                } catch (e) {
+                    console.warn("Firebase Initialisierungsfehler:", e);
+                    updateFirebaseStatus(false, "Firebase-Initialisierung fehlgeschlagen. Lokaler Modus aktiv.");
+                    renderAll();
+                }
+            } else {
+                updateFirebaseStatus(false, "Demo-Modus aktiv: Bitte tragen Sie oben Ihre Firebase-Zugangsdaten ein.");
+                renderAll();
+            }
+        }
+
+        function updateFirebaseStatus(connected, message) {
+            const banner = document.getElementById('firebase-status-banner');
+            const text = document.getElementById('firebase-status-text');
+            if (connected) {
+                banner.className = "p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between";
+                text.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-1.5 text-emerald-600"></i> ${message}`;
+            } else {
+                banner.className = "p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center justify-between";
+                text.innerHTML = `<i class="fa-solid fa-triangle-exclamation mr-1.5 text-amber-600"></i> ${message}`;
+            }
+        }
+
+        // ==========================================
+        // UI & TAB LOGIK
+        // ==========================================
+        window.switchTab = function(tabName) {
+            ['dashboard', 'mitglieder', 'zuweisungen'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`nav-${t}`).className = "px-4 py-2 text-sm font-medium rounded-lg transition-all text-slate-300 hover:text-white hover:bg-slate-700";
+            });
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            document.getElementById(`nav-${tabName}`).className = "px-4 py-2 text-sm font-medium rounded-lg transition-all bg-indigo-600 text-white shadow";
+        }
+
+        window.showModal = function(title, message, isSuccess = true) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            const iconDiv = document.getElementById('modal-icon');
+            if(isSuccess) {
+                iconDiv.className = "w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto text-xl";
+                iconDiv.innerHTML = '<i class="fa-solid fa-check"></i>';
+            } else {
+                iconDiv.className = "w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto text-xl";
+                iconDiv.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+            }
+            document.getElementById('custom-modal').classList.remove('hidden');
+        }
+
+        window.closeModal = function() {
+            document.getElementById('custom-modal').classList.add('hidden');
+        }
+
+        // ==========================================
+        // DATENBANK LISTENERS & OPERATIONEN
+        // ==========================================
+        function setupRealtimeListeners() {
+            if (!db) return;
+
+            // Mitglieder Collection
+            const mitgliederCol = collection(db, 'artifacts', appId, 'public', 'data', 'mitglieder');
+            onSnapshot(mitgliederCol, (snapshot) => {
+                const cloudMitglieder = [];
+                snapshot.forEach(docSnap => {
+                    cloudMitglieder.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                if (cloudMitglieder.length > 0 || !isCloudConnected) {
+                    mitgliederList = cloudMitglieder;
+                }
+                renderAll();
+            }, (error) => {
+                console.error("Fehler beim Laden der Mitglieder:", error);
+            });
+
+            // Zuweisungen Collection
+            const zuweisungenCol = collection(db, 'artifacts', appId, 'public', 'data', 'kilbi_zuweisungen');
+            onSnapshot(zuweisungenCol, (snapshot) => {
+                const cloudZuweisungen = [];
+                snapshot.forEach(docSnap => {
+                    cloudZuweisungen.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                if (cloudZuweisungen.length > 0 || !isCloudConnected) {
+                    zuweisungenList = cloudZuweisungen;
+                }
+                renderAll();
+            }, (error) => {
+                console.error("Fehler beim Laden der Zuweisungen:", error);
+            });
+        }
+
+        // Mitglied hinzufügen
+        window.handleMitgliedSubmit = async function(e) {
+            e.preventDefault();
+            const vorname = document.getElementById('m-vorname').value.trim();
+            const nachname = document.getElementById('m-nachname').value.trim();
+            const email = document.getElementById('m-email').value.trim();
+
+            const neuesMitglied = { vorname, nachname, email, createdAt: Date.now() };
+
+            if (isCloudConnected && db && auth.currentUser) {
+                try {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'mitglieder'), neuesMitglied);
+                    document.getElementById('form-mitglied').reset();
+                    showModal('Erfolg', `${vorname} ${nachname} wurde in Firestore gespeichert.`);
+                } catch (err) {
+                    console.error("Fehler beim Speichern:", err);
+                    showModal('Fehler', 'Mitglied konnte nicht in Firestore gespeichert werden.', false);
+                }
+            } else {
+                mitgliederList.push({ id: 'local-' + Date.now(), ...neuesMitglied });
+                document.getElementById('form-mitglied').reset();
+                renderAll();
+                showModal('Lokaler Modus', `${vorname} ${nachname} lokal hinzugefügt.`);
+            }
+        }
+
+        // Mitglied löschen
+        window.deleteMitglied = async function(id) {
+            if (isCloudConnected && db && auth.currentUser) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'mitglieder', id));
+                } catch (err) {
+                    console.error("Fehler beim Löschen:", err);
+                }
+            } else {
+                mitgliederList = mitgliederList.filter(m => m.id !== id);
+                renderAll();
+            }
+        }
+
+        // Bund Zuweisung hinzufügen
+        window.handleZuweisungSubmit = async function(e) {
+            e.preventDefault();
+            const mitgliedId = document.getElementById('z-mitglied').value;
+            const bundeAnzahl = parseInt(document.getElementById('z-bunde').value);
+
+            const mitglied = mitgliederList.find(m => m.id === mitgliedId);
+            if (!mitglied) return;
+
+            const aktuelleSummeBunde = zuweisungenList.reduce((acc, curr) => acc + curr.bunde, 0);
+            if (aktuelleSummeBunde + bundeAnzahl > 16) {
+                showModal('Achtung', `Es können maximal 16 Bunde vergeben werden! Aktuell sind bereits ${aktuelleSummeBunde} vergeben.`, false);
+                return;
+            }
+
+            const neueZuweisung = {
+                mitgliedId: mitglied.id,
+                mitgliedName: `${mitglied.vorname} ${mitglied.nachname}`,
+                mitgliedEmail: mitglied.email || '',
+                bunde: bundeAnzahl,
+                betrag: bundeAnzahl * 50,
+                bezahlt: false,
+                createdAt: Date.now()
+            };
+
+            if (isCloudConnected && db && auth.currentUser) {
+                try {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'kilbi_zuweisungen'), neueZuweisung);
+                    document.getElementById('form-zuweisung').reset();
+                    document.getElementById('z-bunde').value = '1';
+                    showModal('Erfolg', `${bundeAnzahl} Bund(e) an ${neueZuweisung.mitgliedName} in Firestore zugewiesen.`);
+                } catch (err) {
+                    console.error("Fehler bei Zuweisung:", err);
+                    showModal('Fehler', 'Zuweisung konnte nicht gespeichert werden.', false);
+                }
+            } else {
+                zuweisungenList.push({ id: 'local-' + Date.now(), ...neueZuweisung });
+                document.getElementById('form-zuweisung').reset();
+                renderAll();
+                showModal('Lokaler Modus', `Zuweisung lokal hinzugefügt.`);
+            }
+        }
+
+        // Status "Bezahlt" umschalten
+        window.toggleBezahlt = async function(id, neuerStatus) {
+            const zuweisung = zuweisungenList.find(z => z.id === id);
+            if (!zuweisung) return;
+
+            if (isCloudConnected && db && auth.currentUser) {
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'kilbi_zuweisungen', id);
+                    await updateDoc(docRef, { bezahlt: neuerStatus });
+                } catch (err) {
+                    console.error("Fehler beim Aktualisieren:", err);
+                }
+            } else {
+                zuweisung.bezahlt = neuerStatus;
+                renderAll();
+            }
+
+            if (neuerStatus && zuweisung.mitgliedEmail) {
+                const subject = encodeURIComponent("Bestätigung: Zahlung für Kilbi-Losbunde");
+                const body = encodeURIComponent(`Hallo ${zuweisung.mitgliedName},\n\nvielen herzlichen Dank für deine Zahlung von ${zuweisung.betrag}.- CHF für deine ${zuweisung.bunde} Los-Bunde an der Kilbi!\n\nSportliche Grüsse\nDer Kassier`);
+                window.location.href = `mailto:${zuweisung.mitgliedEmail}?subject=${subject}&body=${body}`;
+            }
+        }
+
+        // Zuweisung löschen
+        window.deleteZuweisung = async function(id) {
+            if (isCloudConnected && db && auth.currentUser) {
+                try {
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'kilbi_zuweisungen', id));
+                } catch (err) {
+                    console.error("Fehler beim Löschen:", err);
+                }
+            } else {
+                zuweisungenList = zuweisungenList.filter(z => z.id !== id);
+                renderAll();
+            }
+        }
+
+        // ==========================================
+        // RENDERING & UI UPDATES
+        // ==========================================
+        function renderAll() {
+            renderMitglieder();
+            updateMitgliedDropdown();
+            renderZuweisungen();
+            updateDashboard();
+        }
+
+        function renderMitglieder() {
+            const tbody = document.getElementById('mitglieder-table-body');
+            document.getElementById('mitglieder-count').innerText = mitgliederList.length;
+            
+            if (mitgliederList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="py-6 text-center text-slate-400">Noch keine Mitglieder erfasst.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = mitgliederList.map(m => `
+                <tr class="hover:bg-slate-50/50 transition-colors">
+                    <td class="py-3 px-4 font-medium text-slate-800">${m.vorname} ${m.nachname}</td>
+                    <td class="py-3 px-4 text-slate-600">${m.email || '<span class="text-slate-400 italic">Keine E-Mail</span>'}</td>
+                    <td class="py-3 px-4 text-right">
+                        <button onclick="deleteMitglied('${m.id}')" class="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg transition-colors" title="Mitglied löschen">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateMitgliedDropdown() {
+            const select = document.getElementById('z-mitglied');
+            select.innerHTML = `<option value="">-- Bitte wählen --</option>` + mitgliederList.map(m => `
+                <option value="${m.id}">${m.vorname} ${m.nachname}</option>
+            `).join('');
+        }
+
+        function renderZuweisungen() {
+            const tbody = document.getElementById('zuweisungen-table-body');
+            const sortedList = [...zuweisungenList].sort((a, b) => (a.bezahlt === b.bezahlt) ? 0 : a.bezahlt ? 1 : -1);
+
+            if (sortedList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">Noch keine Bunde zugewiesen.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = sortedList.map(z => `
+                <tr class="${z.bezahlt ? 'bg-emerald-50/40' : 'hover:bg-slate-50/50'} transition-colors">
+                    <td class="py-3 px-4 font-medium ${z.bezahlt ? 'text-emerald-900 line-through opacity-80' : 'text-slate-800'}">${z.mitgliedName}</td>
+                    <td class="py-3 px-4 text-slate-700 font-semibold">${z.bunde} Bund${z.bunde > 1 ? 'e' : ''}</td>
+                    <td class="py-3 px-4 text-slate-700">${z.betrag}.- CHF</td>
+                    <td class="py-3 px-4">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="checkbox" ${z.bezahlt ? 'checked' : ''} onchange="toggleBezahlt('${z.id}', this.checked)" class="sr-only peer">
+                            <div class="relative w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                            <span class="ms-3 text-xs font-semibold ${z.bezahlt ? 'text-emerald-700' : 'text-amber-600'}">${z.bezahlt ? 'Bezahlt' : 'Offen'}</span>
+                        </label>
+                    </td>
+                    <td class="py-3 px-4 text-right">
+                        <button onclick="deleteZuweisung('${z.id}')" class="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg transition-colors" title="Zuweisung löschen">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateDashboard() {
+            const totalVerteilt = zuweisungenList.reduce((acc, curr) => acc + curr.bunde, 0);
+            const bezahlteBundeCount = zuweisungenList.filter(z => z.bezahlt).reduce((acc, curr) => acc + curr.bunde, 0);
+            const eingenommenGeld = zuweisungenList.filter(z => z.bezahlt).reduce((acc, curr) => acc + curr.betrag, 0);
+            const offenerBetrag = (16 - bezahlteBundeCount) * 50;
+
+            document.getElementById('stat-verteilte-bunde').innerText = `${totalVerteilt} / 16`;
+            document.getElementById('stat-bezahlte-bunde').innerText = `${bezahlteBundeCount}`;
+            document.getElementById('stat-eingenommen').innerText = `${eingenommenGeld}.- CHF`;
+            document.getElementById('stat-offen').innerText = `${offenerBetrag}.- CHF`;
+
+            const verfuegbar = 16 - totalVerteilt;
+            document.getElementById('verfuegbare-bunde-count').innerText = verfuegbar;
+
+            const prozent = Math.min(100, (totalVerteilt / 16) * 100);
+            document.getElementById('progress-bar').style.width = `${prozent}%`;
+            document.getElementById('progress-text').innerText = `${totalVerteilt} von 16 Bunde vergeben`;
+            document.getElementById('progress-percent').innerText = `${Math.round(prozent)}%`;
+
+            const alertBox = document.getElementById('dashboard-alert');
+            const alertText = document.getElementById('dashboard-alert-text');
+            
+            if (totalVerteilt === 16) {
+                alertBox.className = "p-4 rounded-2xl border flex items-start gap-3 bg-emerald-50 border-emerald-200 text-emerald-800";
+                alertBox.querySelector('i').className = "fa-solid fa-circle-check text-lg mt-0.5 text-emerald-600";
+                alertText.innerText = "Alle 16 Bunde wurden erfolgreich an Vereinsmitglieder verteilt!";
+            } else if (totalVerteilt > 16) {
+                alertBox.className = "p-4 rounded-2xl border flex items-start gap-3 bg-rose-50 border-rose-200 text-rose-800";
+                alertBox.querySelector('i').className = "fa-solid fa-triangle-exclamation text-lg mt-0.5 text-rose-600";
+                alertText.innerText = `Achtung: Es wurden ${totalVerteilt} Bunde zugewiesen, erlaubt sind maximal 16!`;
+            } else {
+                alertBox.className = "p-4 rounded-2xl border flex items-start gap-3 bg-amber-50 border-amber-200 text-amber-800";
+                alertBox.querySelector('i').className = "fa-solid fa-triangle-exclamation text-lg mt-0.5 text-amber-600";
+                alertText.innerText = `Es sind noch ${verfuegbar} von 16 Bunde verfügbar und müssen zugewiesen werden.`;
+            }
+        }
+
+        // Start aufrufen
+        initApp();
+    </script>
+</body>
+</html>
