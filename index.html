@@ -476,7 +476,7 @@
                 snapshot.forEach(docSnap => {
                     cloudMitglieder.push({ id: docSnap.id, ...docSnap.data() });
                 });
-                if (cloudMitglieder.length > 0 || !isCloudConnected) {
+                if (isCloudConnected) {
                     mitgliederList = cloudMitglieder;
                 }
                 renderAll();
@@ -491,7 +491,7 @@
                 snapshot.forEach(docSnap => {
                     cloudZuweisungen.push({ id: docSnap.id, ...docSnap.data() });
                 });
-                if (cloudZuweisungen.length > 0 || !isCloudConnected) {
+                if (isCloudConnected) {
                     zuweisungenList = cloudZuweisungen;
                 }
                 renderAll();
@@ -570,7 +570,7 @@
                     await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'kilbi_zuweisungen'), neueZuweisung);
                     document.getElementById('form-zuweisung').reset();
                     document.getElementById('z-bunde').value = '1';
-                    showModal('Erfolg', `${bundeAnzahl} Bund(e) an ${neueZuweisung.mitgliedName} in Firestore zugewiesen.`);
+                    // showModal('Erfolg', `${bundeAnzahl} Bund(e) an ${neueZuweisung.mitgliedName} in Firestore zugewiesen.`);
                 } catch (err) {
                     console.error("Fehler bei Zuweisung:", err);
                     showModal('Fehler', 'Zuweisung konnte nicht gespeichert werden.', false);
