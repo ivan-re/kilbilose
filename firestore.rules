@@ -24,7 +24,7 @@ service cloud.firestore {
 
     match /artifacts/{appId}/public/data/{coll}/{docId} {
       allow read, write: if isAdmin()
-        && coll in ['mitglieder', 'kilbi_zuweisungen'];
+        && coll in ['mitglieder', 'kilbi_zuweisungen', 'einstellungen'];
     }
   }
 }

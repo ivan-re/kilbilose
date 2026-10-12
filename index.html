@@ -29,7 +29,7 @@
                 </div>
                 <div>
                     <h1 class="text-xl font-bold tracking-tight">Kilbi Los-Bunde Manager</h1>
-                    <p class="text-xs text-slate-400">Vereinsverwaltung (Gesamt: 16 Bunde / 800.- CHF)</p>
+                    <p id="header-summary" class="text-xs text-slate-400">Vereinsverwaltung</p>
                 </div>
             </div>
             
@@ -115,7 +115,7 @@
 
             <!-- Schnellübersicht / Fortschritt -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-                <h3 class="text-lg font-bold text-slate-900 mb-4">Fortschritt der 16 Gesamtbunde</h3>
+                <h3 class="text-lg font-bold text-slate-900 mb-4">Fortschritt der <span id="progress-title-count">16</span> Gesamtbunde</h3>
                 <div class="w-full bg-slate-100 rounded-full h-4 overflow-hidden mb-2">
                     <div id="progress-bar" class="bg-indigo-600 h-full transition-all duration-500" style="width: 0%"></div>
                 </div>
@@ -124,12 +124,34 @@
                     <span id="progress-percent">0%</span>
                 </div>
             </div>
+
+            <!-- Einstellungen -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-indigo-600"></i> Einstellungen
+                </h3>
+                <form onsubmit="saveEinstellungen(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Zu verteilende Bunde</label>
+                        <input type="number" id="set-gesamt" min="1" step="1" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Preis pro Bund (CHF)</label>
+                        <input type="number" id="set-preis" min="0.05" step="0.05" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                    </div>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-xl shadow-md transition-all text-sm">
+                        Einstellungen speichern
+                    </button>
+                </form>
+                <p class="text-xs text-slate-500 mt-3">Der neue Preis gilt nur für neue Zuweisungen. Bestehende Zuweisungen behalten ihren Betrag.</p>
+            </div>
         </section>
 
         <!-- 2. TAB: MITGLIEDER VERWALTEN -->
         <section id="tab-mitglieder" class="hidden space-y-6 fade-in">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Mitglied hinzufügen Formular -->
+                <div class="space-y-6 h-fit">
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 h-fit">
                     <h3 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
                         <i class="fa-solid fa-user-plus text-indigo-600"></i> Neues Mitglied
@@ -151,6 +173,24 @@
                             Mitglied speichern
                         </button>
                     </form>
+                </div>
+
+                <!-- Excel-Import -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 h-fit">
+                    <h3 class="text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-file-excel text-emerald-600"></i> Import aus Excel
+                    </h3>
+                    <p class="text-xs text-slate-500 mb-4">Erste Tabelle, erste Zeile mit den Spalten <span class="font-mono">Vorname</span>, <span class="font-mono">Nachname</span>, <span class="font-mono">E-Mail</span>. Bereits vorhandene Mitglieder werden übersprungen.</p>
+                    <input type="file" id="mitglieder-import-input" accept=".xlsx,.xls,.csv,.ods" class="hidden" onchange="handleMitgliederImport(event)">
+                    <div class="space-y-2">
+                        <button type="button" onclick="document.getElementById('mitglieder-import-input').click()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 px-4 rounded-xl shadow-md transition-all text-sm">
+                            <i class="fa-solid fa-upload mr-2"></i>Excel-Datei wählen
+                        </button>
+                        <button type="button" onclick="downloadMitgliederVorlage()" class="w-full border border-slate-200 text-slate-600 hover:bg-slate-50 font-medium py-2 px-4 rounded-xl text-sm">
+                            <i class="fa-solid fa-download mr-2"></i>Vorlage herunterladen
+                        </button>
+                    </div>
+                </div>
                 </div>
 
                 <!-- Mitgliederliste -->
@@ -192,8 +232,8 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Anzahl Bunde (à 50.- CHF)</label>
-                            <input type="number" id="z-bunde" min="1" max="16" value="1" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1">Anzahl Bunde (à <span id="preis-label">50</span>.- CHF)</label>
+                            <input type="number" id="z-bunde" min="1" value="1" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
                             <p class="text-xs text-slate-500 mt-1">Verbleibende verfügbare Bunde: <span id="verfuegbare-bunde-count" class="font-semibold text-slate-800">16</span></p>
                         </div>
                         <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-4 rounded-xl shadow-md transition-all text-sm">
@@ -260,7 +300,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, deleteDoc, updateDoc, doc, getDoc, setDoc, writeBatch, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // ==========================================
         // FIREBASE KONFIGURATION (Hier Daten eintragen)
@@ -285,6 +325,8 @@
             { id: 'z-1', mitgliedId: 'm-1', mitgliedName: 'Hans Müller', mitgliedEmail: 'hans.mueller@verein.ch', bunde: 2, betrag: 100, bezahlt: false }
         ];
         let isCloudConnected = false;
+        let gesamtBunde = 16;
+        let preisProBund = 50;
 
         // Prüfen ob die Firebase Konfiguration gültig ist (keine Platzhalter)
         function isFirebaseConfigValid() {
@@ -414,6 +456,19 @@
             mitgliederList = [];
             zuweisungenList = [];
 
+            // Einstellungen (Anzahl Bunde, Preis)
+            onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'einstellungen', 'config'), (snap) => {
+                if (snap.exists()) {
+                    const d = snap.data();
+                    if (Number.isInteger(d.gesamtBunde) && d.gesamtBunde > 0) gesamtBunde = d.gesamtBunde;
+                    if (typeof d.preisProBund === 'number' && d.preisProBund > 0) preisProBund = d.preisProBund;
+                }
+                fillEinstellungenForm();
+                renderAll();
+            }, (error) => {
+                console.error("Fehler beim Laden der Einstellungen:", error);
+            });
+
             // Mitglieder Collection
             const mitgliederCol = collection(db, 'artifacts', appId, 'public', 'data', 'mitglieder');
             onSnapshot(mitgliederCol, (snapshot) => {
@@ -495,8 +550,8 @@
             if (!mitglied) return;
 
             const aktuelleSummeBunde = zuweisungenList.reduce((acc, curr) => acc + curr.bunde, 0);
-            if (aktuelleSummeBunde + bundeAnzahl > 16) {
-                showModal('Achtung', `Es können maximal 16 Bunde vergeben werden! Aktuell sind bereits ${aktuelleSummeBunde} vergeben.`, false);
+            if (aktuelleSummeBunde + bundeAnzahl > gesamtBunde) {
+                showModal('Achtung', `Es können maximal ${gesamtBunde} Bunde vergeben werden! Aktuell sind bereits ${aktuelleSummeBunde} vergeben.`, false);
                 return;
             }
 
@@ -505,7 +560,7 @@
                 mitgliedName: `${mitglied.vorname} ${mitglied.nachname}`,
                 mitgliedEmail: mitglied.email || '',
                 bunde: bundeAnzahl,
-                betrag: bundeAnzahl * 50,
+                betrag: bundeAnzahl * preisProBund,
                 bezahlt: false,
                 createdAt: Date.now()
             };
@@ -639,36 +694,167 @@
             const totalVerteilt = zuweisungenList.reduce((acc, curr) => acc + curr.bunde, 0);
             const bezahlteBundeCount = zuweisungenList.filter(z => z.bezahlt).reduce((acc, curr) => acc + curr.bunde, 0);
             const eingenommenGeld = zuweisungenList.filter(z => z.bezahlt).reduce((acc, curr) => acc + curr.betrag, 0);
-            const offenerBetrag = (16 - bezahlteBundeCount) * 50;
+            const offenerBetrag = (gesamtBunde - bezahlteBundeCount) * preisProBund;
 
-            document.getElementById('stat-verteilte-bunde').innerText = `${totalVerteilt} / 16`;
+            document.getElementById('stat-verteilte-bunde').innerText = `${totalVerteilt} / ${gesamtBunde}`;
             document.getElementById('stat-bezahlte-bunde').innerText = `${bezahlteBundeCount}`;
             document.getElementById('stat-eingenommen').innerText = `${eingenommenGeld}.- CHF`;
             document.getElementById('stat-offen').innerText = `${offenerBetrag}.- CHF`;
 
-            const verfuegbar = 16 - totalVerteilt;
+            const verfuegbar = gesamtBunde - totalVerteilt;
+            document.getElementById('header-summary').innerText = `Vereinsverwaltung (Gesamt: ${gesamtBunde} Bunde / ${gesamtBunde * preisProBund}.- CHF)`;
+            document.getElementById('progress-title-count').innerText = gesamtBunde;
+            document.getElementById('preis-label').innerText = preisProBund;
+            document.getElementById('z-bunde').max = Math.max(1, verfuegbar);
             document.getElementById('verfuegbare-bunde-count').innerText = verfuegbar;
 
-            const prozent = Math.min(100, (totalVerteilt / 16) * 100);
+            const prozent = Math.min(100, (totalVerteilt / gesamtBunde) * 100);
             document.getElementById('progress-bar').style.width = `${prozent}%`;
-            document.getElementById('progress-text').innerText = `${totalVerteilt} von 16 Bunde vergeben`;
+            document.getElementById('progress-text').innerText = `${totalVerteilt} von ${gesamtBunde} Bunde vergeben`;
             document.getElementById('progress-percent').innerText = `${Math.round(prozent)}%`;
 
             const alertBox = document.getElementById('dashboard-alert');
             const alertText = document.getElementById('dashboard-alert-text');
             
-            if (totalVerteilt === 16) {
+            if (totalVerteilt === gesamtBunde) {
                 alertBox.className = "p-4 rounded-2xl border flex items-start gap-3 bg-emerald-50 border-emerald-200 text-emerald-800";
                 alertBox.querySelector('i').className = "fa-solid fa-circle-check text-lg mt-0.5 text-emerald-600";
-                alertText.innerText = "Alle 16 Bunde wurden erfolgreich an Vereinsmitglieder verteilt!";
-            } else if (totalVerteilt > 16) {
+                alertText.innerText = `Alle ${gesamtBunde} Bunde wurden erfolgreich an Vereinsmitglieder verteilt!`;
+            } else if (totalVerteilt > gesamtBunde) {
                 alertBox.className = "p-4 rounded-2xl border flex items-start gap-3 bg-rose-50 border-rose-200 text-rose-800";
                 alertBox.querySelector('i').className = "fa-solid fa-triangle-exclamation text-lg mt-0.5 text-rose-600";
-                alertText.innerText = `Achtung: Es wurden ${totalVerteilt} Bunde zugewiesen, erlaubt sind maximal 16!`;
+                alertText.innerText = `Achtung: Es wurden ${totalVerteilt} Bunde zugewiesen, erlaubt sind maximal ${gesamtBunde}!`;
             } else {
                 alertBox.className = "p-4 rounded-2xl border flex items-start gap-3 bg-amber-50 border-amber-200 text-amber-800";
                 alertBox.querySelector('i').className = "fa-solid fa-triangle-exclamation text-lg mt-0.5 text-amber-600";
-                alertText.innerText = `Es sind noch ${verfuegbar} von 16 Bunde verfügbar und müssen zugewiesen werden.`;
+                alertText.innerText = `Es sind noch ${verfuegbar} von ${gesamtBunde} Bunde verfügbar und müssen zugewiesen werden.`;
+            }
+        }
+
+        // ==========================================
+        // EINSTELLUNGEN
+        // ==========================================
+        function fillEinstellungenForm() {
+            document.getElementById('set-gesamt').value = gesamtBunde;
+            document.getElementById('set-preis').value = preisProBund;
+        }
+
+        window.saveEinstellungen = async function(e) {
+            e.preventDefault();
+            const neueGesamt = parseInt(document.getElementById('set-gesamt').value, 10);
+            const neuerPreis = parseFloat(document.getElementById('set-preis').value);
+            if (!Number.isInteger(neueGesamt) || neueGesamt < 1 || !(neuerPreis > 0)) {
+                showModal('Fehler', 'Bitte eine gültige Anzahl Bunde und einen gültigen Preis eingeben.', false);
+                return;
+            }
+            const verteilt = zuweisungenList.reduce((acc, curr) => acc + curr.bunde, 0);
+            if (neueGesamt < verteilt) {
+                showModal('Achtung', `Es sind bereits ${verteilt} Bunde zugewiesen. Die Gesamtzahl kann nicht kleiner sein.`, false);
+                return;
+            }
+            if (isCloudConnected && db && auth.currentUser) {
+                try {
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'einstellungen', 'config'), { gesamtBunde: neueGesamt, preisProBund: neuerPreis });
+                    showModal('Erfolg', 'Einstellungen wurden gespeichert.');
+                } catch (err) {
+                    console.error("Fehler beim Speichern der Einstellungen:", err);
+                    showModal('Fehler', 'Einstellungen konnten nicht gespeichert werden.', false);
+                }
+            } else {
+                gesamtBunde = neueGesamt;
+                preisProBund = neuerPreis;
+                renderAll();
+                showModal('Lokaler Modus', 'Einstellungen lokal übernommen.');
+            }
+        }
+
+        // ==========================================
+        // EXCEL-IMPORT MITGLIEDER (SheetJS, wird erst bei Bedarf geladen)
+        // ==========================================
+        let sheetJsPromise = null;
+        function loadSheetJS() {
+            if (window.XLSX) return Promise.resolve(window.XLSX);
+            if (!sheetJsPromise) {
+                sheetJsPromise = new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
+                    script.onload = () => resolve(window.XLSX);
+                    script.onerror = () => { sheetJsPromise = null; reject(new Error('Excel-Bibliothek konnte nicht geladen werden.')); };
+                    document.head.appendChild(script);
+                });
+            }
+            return sheetJsPromise;
+        }
+
+        const mitgliedKey = (m) => `${m.vorname}|${m.nachname}|${m.email || ''}`.toLowerCase();
+
+        window.downloadMitgliederVorlage = async function() {
+            try {
+                const XLSX = await loadSheetJS();
+                const ws = XLSX.utils.aoa_to_sheet([['Vorname', 'Nachname', 'E-Mail'], ['Hans', 'Muster', 'hans.muster@verein.ch']]);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Mitglieder');
+                XLSX.writeFile(wb, 'Mitglieder-Vorlage.xlsx');
+            } catch (err) {
+                showModal('Fehler', err.message, false);
+            }
+        }
+
+        window.handleMitgliederImport = async function(e) {
+            const file = e.target.files[0];
+            e.target.value = '';
+            if (!file) return;
+            try {
+                const XLSX = await loadSheetJS();
+                const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+                const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+                const pick = (row, keys) => {
+                    for (const k of Object.keys(row)) {
+                        if (keys.includes(k.trim().toLowerCase())) return String(row[k]).trim();
+                    }
+                    return '';
+                };
+                const hatSpalten = rows.length > 0 && Object.keys(rows[0]).some(k => ['vorname', 'nachname'].includes(k.trim().toLowerCase()));
+                if (!hatSpalten) {
+                    showModal('Fehler', 'Die Spalten "Vorname" und "Nachname" wurden in der ersten Zeile nicht gefunden.', false);
+                    return;
+                }
+
+                const bekannt = new Set(mitgliederList.map(mitgliedKey));
+                const neue = [];
+                let uebersprungen = 0;
+                for (const row of rows) {
+                    const m = {
+                        vorname: pick(row, ['vorname']),
+                        nachname: pick(row, ['nachname']),
+                        email: pick(row, ['e-mail', 'email', 'mail', 'e-mail-adresse']),
+                        createdAt: Date.now()
+                    };
+                    if (!m.vorname || !m.nachname || bekannt.has(mitgliedKey(m))) { uebersprungen++; continue; }
+                    bekannt.add(mitgliedKey(m));
+                    neue.push(m);
+                }
+                if (neue.length === 0) {
+                    showModal('Import', `Keine neuen Mitglieder gefunden (${uebersprungen} Zeile(n) übersprungen).`, false);
+                    return;
+                }
+                if (!confirm(`${neue.length} neue Mitglieder importieren? (${uebersprungen} Zeile(n) übersprungen: leer oder bereits vorhanden)`)) return;
+
+                if (isCloudConnected && db && auth.currentUser) {
+                    const col = collection(db, 'artifacts', appId, 'public', 'data', 'mitglieder');
+                    for (let i = 0; i < neue.length; i += 400) {
+                        const batch = writeBatch(db);
+                        neue.slice(i, i + 400).forEach(m => batch.set(doc(col), m));
+                        await batch.commit();
+                    }
+                } else {
+                    neue.forEach((m, i) => mitgliederList.push({ id: 'local-' + Date.now() + '-' + i, ...m }));
+                    renderAll();
+                }
+                showModal('Import abgeschlossen', `${neue.length} Mitglieder importiert, ${uebersprungen} übersprungen.`);
+            } catch (err) {
+                console.error("Fehler beim Import:", err);
+                showModal('Fehler', 'Import fehlgeschlagen: ' + err.message, false);
             }
         }
 
